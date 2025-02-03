@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import styles from './styles.module.scss';
 import { gsap } from "gsap";
 import SDK from '@uphold/uphold-sdk-javascript';
+import CustomSelect from "../Input/Select";
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC', 'ADA'];
 type Rates = { [key: string]: string };
@@ -12,6 +13,20 @@ const sdk = new SDK({
     clientId: 'foo',
     clientSecret: 'bar'
 });
+
+
+const CurrencyPill = ({currency, currencySymbol}) => {
+    function getImageUrl(name) {
+        // note that this does not include files in subdirectories
+        return new URL(`../../assets/currencies/${name}.png`, import.meta.url).href
+      }
+    return (
+        <div className={styles.currencyPill}>
+            <img src={getImageUrl(currencySymbol)}/>
+            <p>{currency}</p>
+        </div>
+    )
+}
 
 const MainFrame = (): React.JSX.Element => {
     const [amount, setAmount] = useState<string>('1.00');
@@ -54,15 +69,6 @@ const MainFrame = (): React.JSX.Element => {
         return () => clearTimeout(debounceTimer);
     }, [amount, baseCurrency, fetchRates]);
 
-    useEffect(() => {
-        gsap.from(`.${styles.rateItem}`, {
-            y: 10,
-            opacity: 0,
-            stagger: 0.1,
-            duration: 0.3
-        });
-    }, [rates]);
-
     return (
         <section className={styles.container}>
             <div className={styles.texts}>
@@ -80,24 +86,15 @@ const MainFrame = (): React.JSX.Element => {
                     onBlur={(e) => gsap.to(e.target, { scale: 1, duration: 0.3 })}
                 />
 
-                <select
-                    value={baseCurrency}
-                    className={styles.currencySelect}
-                    onChange={(e) => setBaseCurrency(e.target.value)}
-                    data-testid="currency-select"
-                >
-                    {CURRENCIES.map(currency => (
-                        <option key={currency} value={currency}>{currency}</option>
-                    ))}
-                </select>
+                <CustomSelect options={CURRENCIES} selectedValue={baseCurrency} onChange={setBaseCurrency}/>
             </div>
 
             <div className={styles.ratesContainer} data-testid="rates-container">
-                <span>Enter an amount to check the rates.</span>
+                {!rates && <span>Enter an amount to check the rates.</span>}
                 {Object.entries(rates).map(([currency, rate]) => (
                     <div key={currency} className={styles.rateItem}>
                         <span className={styles.rateValue}>{rate}</span>
-                        <span className={styles.currencyCode}>{currency}</span>
+                        <CurrencyPill currency={currency} currencySymbol={currency}/>
                     </div>
                 ))}
             </div>
