@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from './styles.module.scss';
 import { gsap } from "gsap";
 import SDK from '@uphold/uphold-sdk-javascript';
@@ -7,6 +7,7 @@ import CustomSelect from "../Input/Select";
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC', 'ADA'];
 type Rates = { [key: string]: string };
 type Cache = { [key: string]: Rates };
+type RatesCache = { [pair: string]: number };
 
 const sdk = new SDK({
     baseUrl: 'http://api-sandbox.uphold.com',
@@ -15,14 +16,14 @@ const sdk = new SDK({
 });
 
 
-const CurrencyPill = ({currency, currencySymbol}) => {
+const CurrencyPill = ({ currency, currencySymbol }) => {
     function getImageUrl(name) {
         // note that this does not include files in subdirectories
         return new URL(`../../assets/currencies/${name}.png`, import.meta.url).href
-      }
+    }
     return (
         <div className={styles.currencyPill}>
-            <img src={getImageUrl(currencySymbol)}/>
+            <img src={getImageUrl(currencySymbol)} />
             <p>{currency}</p>
         </div>
     )
@@ -32,43 +33,71 @@ const MainFrame = (): React.JSX.Element => {
     const [amount, setAmount] = useState<string>('1.00');
     const [baseCurrency, setBaseCurrency] = useState<string>('USD');
     const [rates, setRates] = useState<Rates>({});
-    const [cache, setCache] = useState<Cache>({});
+    const [convertedAmounts, setConvertedAmounts] = useState<Rates>({});
+    const [ratesCache, setRatesCache] = useState<RatesCache>({});
+    const debounceRef = useRef<NodeJS.Timeout>();
+
 
     const fetchRates = useCallback(async (currency: string) => {
-        if (cache[currency]) {
-            setRates(cache[currency]);
-            return;
-        }
-
-        const newRates: Rates = {};
-        const numericAmount = parseFloat(amount) || 0;
+        const newRates: RatesCache = {};
 
         await Promise.all(
             CURRENCIES
                 .filter(c => c !== currency)
-                .map(async (targetCurrency) => {
-                    const pair = `${currency}-${targetCurrency}`;
+                .map(async (target) => {
+                    const pair = `${currency}-${target}`;
+                    if (ratesCache[pair]) return; // Use cached rate if available
+
                     try {
                         const ticker = await sdk.getTicker(pair);
-                        newRates[targetCurrency] = (numericAmount * ticker.ask).toFixed(4);
+                        newRates[pair] = ticker.ask;
                     } catch (error) {
-                        console.error(`Error fetching rate for ${pair}:`, error);
-                        newRates[targetCurrency] = 'N/A';
+                        console.error(`Error fetching ${pair}:`, error);
+                        newRates[pair] = 0;
                     }
                 })
         );
 
-        setCache(prev => ({ ...prev, [currency]: newRates }));
-        setRates(newRates);
-    }, [amount, cache]);
+        setRatesCache(prev => ({ ...prev, ...newRates }));
+    }, [ratesCache]);
 
     useEffect(() => {
-        const debounceTimer = setTimeout(() => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
             fetchRates(baseCurrency);
         }, 300);
-        return () => clearTimeout(debounceTimer);
-    }, [amount, baseCurrency, fetchRates]);
 
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, [baseCurrency, fetchRates]);
+
+    useEffect(() => {
+        const numericAmount = parseFloat(amount) || 0;
+        const newAmounts: Rates = {};
+
+        CURRENCIES
+            .filter(c => c !== baseCurrency)
+            .forEach(target => {
+                const pair = `${baseCurrency}-${target}`;
+                const rate = ratesCache[pair] || 0;
+                newAmounts[target] = (numericAmount * rate).toFixed(4);
+            });
+
+        setConvertedAmounts(newAmounts);
+    }, [amount, baseCurrency, ratesCache]);
+
+    useEffect(() => {
+        gsap.from(`.${styles.rateItem}`, {
+            y: 10,
+            opacity: 0,
+            stagger: 0.1,
+            duration: 0.3
+        });
+    }, [baseCurrency]);
+
+
+    console.log({ rates, amount, baseCurrency })
     return (
         <section className={styles.container}>
             <div className={styles.texts}>
@@ -82,19 +111,19 @@ const MainFrame = (): React.JSX.Element => {
                     onChange={(e) => setAmount(e.target.value)}
                     className={styles.amountInput}
                     data-testid="amount-input"
-                    onFocus={(e) => gsap.to(e.target, { scale: 1.05, duration: 0.3 })}
+                    onFocus={(e) => gsap.to(e.target, { scale: 1.02, duration: 0.3 })}
                     onBlur={(e) => gsap.to(e.target, { scale: 1, duration: 0.3 })}
                 />
 
-                <CustomSelect options={CURRENCIES} selectedValue={baseCurrency} onChange={setBaseCurrency}/>
+                <CustomSelect options={CURRENCIES} selectedValue={baseCurrency} onChange={setBaseCurrency} />
             </div>
 
             <div className={styles.ratesContainer} data-testid="rates-container">
                 {!rates && <span>Enter an amount to check the rates.</span>}
-                {Object.entries(rates).map(([currency, rate]) => (
+                {Object.entries(convertedAmounts).map(([currency, amount]) => (
                     <div key={currency} className={styles.rateItem}>
-                        <span className={styles.rateValue}>{rate}</span>
-                        <CurrencyPill currency={currency} currencySymbol={currency}/>
+                        <span className={styles.rateValue}>{amount}</span>
+                        <CurrencyPill currency={currency} currencySymbol={currency} />
                     </div>
                 ))}
             </div>
