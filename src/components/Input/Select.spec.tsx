@@ -14,7 +14,6 @@ describe('CustomSelect', () => {
       />
     );
     
-    // Use more specific query
     expect(screen.getByTestId('select-button')).toBeInTheDocument();
     expect(screen.getByAltText('USD')).toBeInTheDocument();
   });
@@ -27,8 +26,6 @@ describe('CustomSelect', () => {
         onChange={() => {}}
       />
     );
-
-    // Use test ID instead of role
     const button = screen.getByTestId('select-button');
     fireEvent.click(button);
     

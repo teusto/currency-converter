@@ -6,7 +6,6 @@ import CustomSelect from "../Input/Select";
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AED', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC'];
 type Rates = { [key: string]: string };
-type Cache = { [key: string]: Rates };
 type RatesCache = { [pair: string]: number };
 
 const sdk = new SDK({
@@ -18,7 +17,6 @@ const sdk = new SDK({
 
 const CurrencyPill = ({ currency, currencySymbol }) => {
     function getImageUrl(name) {
-        // note that this does not include files in subdirectories
         return new URL(`../../assets/currencies/${name}.png`, import.meta.url).href
     }
     return (
@@ -46,7 +44,7 @@ const MainFrame = (): React.JSX.Element => {
                 .filter(c => c !== currency)
                 .map(async (target) => {
                     const pair = `${currency}-${target}`;
-                    if (ratesCache[pair]) return; // Use cached rate if available
+                    if (ratesCache[pair]) return;
 
                     try {
                         const ticker = await sdk.getTicker(pair);

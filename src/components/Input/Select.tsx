@@ -20,7 +20,6 @@ const CustomSelect = ({ options, selectedValue, onChange }: CustomSelectProps) =
   const selectedOption = options.find(option => option === selectedValue);
 
   function getImageUrl(name) {
-    // note that this does not include files in subdirectories
     return new URL(`../../assets/currencies/${name}.png`, import.meta.url).href
   }
 
