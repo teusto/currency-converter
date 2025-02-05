@@ -1,0 +1,19 @@
+// Breakpoints
+$sm: 0px;
+$md: 768px;
+$lg: 1024px;
+$xl: 1440px;
+
+
+//MQ
+@mixin tablet {
+    @media (max-width: #{$lg}) {
+      @content;
+    }
+  }
+  @mixin mobile {
+    @media (max-width: #{$md}) {
+      @content;
+    }
+  }
+  

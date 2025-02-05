@@ -10,5 +10,5 @@ export default defineConfig({
       inline: [/@testing-library/],
     },
     setupFiles: './src/setupTests.ts',
-  },
+  }
 })

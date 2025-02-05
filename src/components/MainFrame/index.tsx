@@ -4,14 +4,18 @@ import { gsap } from "gsap";
 import SDK from '@uphold/uphold-sdk-javascript';
 import CustomSelect from "../Input/Select";
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AED', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC'];
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'DASH', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC'];
 type Rates = { [key: string]: string };
 type RatesCache = { [pair: string]: number };
 
 const sdk = new SDK({
     baseUrl: 'http://api-sandbox.uphold.com',
     clientId: 'foo',
-    clientSecret: 'bar'
+    clientSecret: 'bar',
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+    },
 });
 
 
@@ -30,7 +34,7 @@ const CurrencyPill = ({ currency, currencySymbol }) => {
 const MainFrame = (): React.JSX.Element => {
     const [amount, setAmount] = useState<string>('1.00');
     const [baseCurrency, setBaseCurrency] = useState<string>('USD');
-    const [rates, setRates] = useState<Rates>({});
+    const [rates, setRates] = useState<boolean>(false);
     const [convertedAmounts, setConvertedAmounts] = useState<Rates>({});
     const [ratesCache, setRatesCache] = useState<RatesCache>({});
     const debounceRef = useRef<NodeJS.Timeout>();
@@ -49,6 +53,7 @@ const MainFrame = (): React.JSX.Element => {
                     try {
                         const ticker = await sdk.getTicker(pair);
                         newRates[pair] = ticker.ask;
+                        if(ticker.ask) setRates(true);
                     } catch (error) {
                         console.error(`Error fetching ${pair}:`, error);
                         newRates[pair] = 0;
@@ -94,8 +99,6 @@ const MainFrame = (): React.JSX.Element => {
         });
     }, [baseCurrency]);
 
-
-    console.log({ rates, amount, baseCurrency })
     return (
         <section className={styles.container}>
             <div className={styles.texts}>
@@ -117,13 +120,15 @@ const MainFrame = (): React.JSX.Element => {
             </div>
 
             <div className={styles.ratesContainer} data-testid="rates-container">
-                {!rates && <span>Enter an amount to check the rates.</span>}
-                {Object.entries(convertedAmounts).map(([currency, amount]) => (
+                {!rates ? <span className={styles.noRates}>Enter an amount to check the rates.</span>
+                :
+                Object.entries(convertedAmounts).map(([currency, amount]) => (
                     <div key={currency} className={styles.rateItem}>
                         <span className={styles.rateValue}>{amount}</span>
                         <CurrencyPill currency={currency} currencySymbol={currency} />
                     </div>
-                ))}
+                ))
+                }
             </div>
         </section>
     )
