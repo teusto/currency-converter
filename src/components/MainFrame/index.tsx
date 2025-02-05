@@ -4,7 +4,7 @@ import { gsap } from "gsap";
 import SDK from '@uphold/uphold-sdk-javascript';
 import CustomSelect from "../Input/Select";
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC', 'ADA'];
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AED', 'BTC', 'ETH', 'XRP', 'BCH', 'LTC'];
 type Rates = { [key: string]: string };
 type Cache = { [key: string]: Rates };
 type RatesCache = { [pair: string]: number };

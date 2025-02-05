@@ -43,6 +43,7 @@ const CustomSelect = ({ options, selectedValue, onChange }: CustomSelectProps) =
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        data-testid="select-button"
       >
         {selectedOption && (
           <>
@@ -65,6 +66,7 @@ const CustomSelect = ({ options, selectedValue, onChange }: CustomSelectProps) =
               role="option"
               aria-selected={option === selectedValue}
               className={styles.optionItem}
+              data-testid={`${option}-test`}
               onClick={() => {
                 onChange(option);
                 setIsOpen(false);
