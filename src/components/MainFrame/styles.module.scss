@@ -1,6 +1,8 @@
+@import '../../styles/styles.scss';
+
 .container {
     padding: 1rem;
-    background: rgb(255, 255, 255);
+    background: $uphold-white;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -39,12 +41,12 @@
     padding: 1rem;
     border-radius: 8px;
     font-size: 1.5rem;
-    background-color: #f5f7f7;
+    background-color: $uphold-light;
     border: none;
     font-weight: 600;
     &:focus{
-        border-color: #49cc68;
-        outline-color: #49cc68;
+        border-color: $uphold-green;
+        outline-color: $uphold-green;
     }
 }
 
@@ -62,7 +64,7 @@ input::-webkit-inner-spin-button {
     padding: 0.5rem 1rem;
     border-radius: 12px;
     border: none;
-    background: white;
+    background: $uphold-light;
     font-size: .8rem;
     cursor: pointer;
 }
