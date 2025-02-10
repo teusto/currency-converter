@@ -42,6 +42,10 @@
     background-color: #f5f7f7;
     border: none;
     font-weight: 600;
+    &:focus{
+        border-color: #49cc68;
+        outline-color: #49cc68;
+    }
 }
 
 input::-webkit-outer-spin-button,
