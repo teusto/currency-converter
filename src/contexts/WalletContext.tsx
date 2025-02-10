@@ -11,8 +11,8 @@ const WalletContext = createContext<WalletContextType>({
 });
 
 export const WalletProvider = ({ children }: { children: ReactNode }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
+  const [isConnected, ] = useState(false);
+  const [walletAddress, ] = useState('');
 
   return (
     <WalletContext.Provider value={{ isConnected, walletAddress }}>

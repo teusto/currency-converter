@@ -20,13 +20,13 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
       - name: Run tests
-        run: npm test
+        run: yarn run test
 
       - name: Build project
-        run: npm run build
+        run: yarn run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -35,4 +35,4 @@ jobs:
           path: dist
       
       - name: Lint code
-        run: npm run lint
+        run: yarn run lint
